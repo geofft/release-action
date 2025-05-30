@@ -126,16 +126,16 @@ export class Action {
     }
 
     private async findMatchingDraftReleaseId(): Promise<number | undefined> {
-        const tag = this.inputs.tag
-        const response = await this.releases.listReleases()
-        const releases = response.data
-        if (!releases) {
-            throw new Error(`No releases found. Response: ${JSON.stringify(response)}`)
+        let getResponse: ReleaseByTagResponse;
+        try {
+            getResponse = await this.releases.getByTag(this.inputs.tag)
+        } catch (error: any) {
+            return
         }
 
-        const draftRelease = releases.find((release) => release.draft && release.tag_name == tag)
-
-        return draftRelease?.id
+        if (getResponse.data?.draft) {
+            return getResponse.data.id
+        }
     }
 
     private async createRelease(): Promise<CreateReleaseResponse> {
